@@ -14,7 +14,7 @@ def awsEnvDev = "aws-qa"
 //pipeline variables
 def version = null
 def projectProps
-def appDir = params.APP_DIR ?: "wap-index"
+def appDir = params.APP_DIR ?: "EMP-wapindex"
 def artifactId = appDir
 
 def awsRegion
@@ -33,20 +33,20 @@ node {
 //        if(RUN_NPM == "true") {
 //            cleanWs()
 //        }
-        dir('wap-index') {
+        dir('EMP-wapindex') {
             checkout scm: [
                     $class           : 'GitSCM',
                     branches         : [[name: params.UI_BRANCH]],
                     userRemoteConfigs: [
                             [
-                                    url          : "git@github.com:hubject/wap-index.git",
+                                    url          : "git@github.com:hubject/EMP-wapindex.git",
                                     credentialsId: 'github'
                             ]
                     ]
             ]
         }
         def uiCommitHash
-        dir('wap-index') {
+        dir('EMP-wapindex') {
             uiCommitHash = sh(script: 'git log -1 --pretty=format:"%h"', returnStdout: true).trim()
             version = "$UI_BRANCH-$uiCommitHash".replaceAll("/", "-")
             projectProps = readYaml file: 'aws/aws-pipeline.yaml'
@@ -69,7 +69,7 @@ node {
                 //sh 'npm install'
                 //sh 'npm run lint'
             }
-            dir('wap-index') {
+            dir('EMP-wapindex') {
                 //sh 'npm run test'
                 sh 'npm install'
                 sh 'npm run build'
@@ -80,10 +80,10 @@ node {
                 //sh "sed -i.bak 's/static/dashboard\\/static/g' dist/index.html"
                 sh 'cat  dist/index.html'
                 sh 'ls  -al'
-                sh 'mkdir -p dist/c/portal/css'
-                sh 'mkdir -p dist/c/portal/js'
-                sh 'cp -rp dist/css/* dist/c/portal/css/'
-                sh 'cp -rp dist/js/* dist/c/portal/js/'
+                sh 'mkdir -p dist/d/portal/css'
+                sh 'mkdir -p dist/d/portal/js'
+                sh 'cp -rp dist/css/* dist/d/portal/css/'
+                sh 'cp -rp dist/js/* dist/d/portal/js/'
                 //sh 'ls dist/dashboard'
                 //sh 'mkdir docker'
                 //sh 'cp build/Dockerfile docker'
@@ -98,9 +98,9 @@ node {
         echo dockerWorkDir
         sh 'mkdir -p ' + dockerWorkDir
         sh 'mkdir -p ' + dockerWorkDir
-        sh 'cp wap-index/aws-jenkins-tools/Dockerfile '  + dockerWorkDir
-        sh 'cp wap-index/aws-jenkins-tools/nginx.conf ' + dockerWorkDir
-        sh 'cp -r wap-index/dist ' + dockerWorkDir        
+        sh 'cp EMP-wapindex/aws-jenkins-tools/Dockerfile '  + dockerWorkDir
+        sh 'cp EMP-wapindex/aws-jenkins-tools/nginx.conf ' + dockerWorkDir
+        sh 'cp -r EMP-wapindex/dist ' + dockerWorkDir        
     }
     //def dockerWorkDir2 = env.WORKSPACE + '/' + appDir + '/deploy/container/jenkins/docker'
     //stage("Maven build") {
@@ -133,9 +133,9 @@ node {
 
     stage("Docker build & push") {
         echo 'building image ' + dockerImageName
-        //sh 'cp wap-index/aws-jenkins-tools/Dockerfile'  + dockerWorkDir
-        //sh 'cp wap-index/aws-jenkins-tools/nginx.conf' + dockerWorkDir
-        //sh 'cp -a wap-index/dist' + dockerWorkDir
+        //sh 'cp EMP-wapindex/aws-jenkins-tools/Dockerfile'  + dockerWorkDir
+        //sh 'cp EMP-wapindex/aws-jenkins-tools/nginx.conf' + dockerWorkDir
+        //sh 'cp -a EMP-wapindex/dist' + dockerWorkDir
         //docker.withTool("default") {
         docker.withServer("unix:///var/run/docker.sock", "AKIA3GECGIDFE7TWZS25") {
             docker.withRegistry(dockerRegistry, dockerRegistryCreds) {
@@ -173,13 +173,14 @@ node {
     stage('Auto_deploy') {
         echo 'Auto deploy to ' + Envionment
         echo 'Auto deploy ECR Version: ' + version
-        dir('wap-index') {
+        dir('EMP-wapindex') {
             //sh './bin/update-cloudformation-templates.sh -p default -pn hbs -e ${Envionment} -c core -l ${ServiceName} -v ${version}'
             if (Environment == "prod") {
-                sh "sed -i '80,89 s/^/#/g '   deploy/templates/core/service-adminportal/aws-cloudformation/master.yml"
-                sh "grep -A10 ServiceLogGroup deploy/templates/core/service-adminportal/aws-cloudformation/master.yml"
+                sh "sed -i '80,89 s/^/#/g '   deploy/templates/core/service-wapindex/aws-cloudformation/master.yml"
+                sh 'cat  dist/index.html'
+                sh "grep -A10 ServiceLogGroup deploy/templates/core/service-wapindex/aws-cloudformation/master.yml"
             }
-            sh './bin/update-cloudformation-templates.sh -p hbsau -pn hbs -e ' + Envionment + ' -c core -l service-adminportal -v ' + version
+            sh './bin/update-cloudformation-templates.sh -p hbsau -pn hbs -e ' + Envionment + ' -c core -l service-wapindex -v ' + version
         }
     }
 }
