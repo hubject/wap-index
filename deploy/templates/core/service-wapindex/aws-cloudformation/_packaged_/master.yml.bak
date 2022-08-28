@@ -1,0 +1,143 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Master template for deployment of the adminportal service for the CORE
+Parameters:
+  ProjectName:
+    Description: Name of the project
+    Type: String
+    Default: hbs
+  Environment:
+    Description: Name of the environment
+    Type: String
+    Default: dev
+  Component:
+    Description: Name of the component
+    Type: String
+    Default: core
+  Layer:
+    Description: Name of the layer
+    Type: String
+    Default: service-adminportal-base
+  ServiceName:
+    Description: Name of the service
+    Type: String
+    Default: adminportal
+  ServiceVersion:
+    Description: Version of the service
+    Type: String
+    Default: 1.0.0
+  AlarmsEnabled:
+    Description: Setting this to 'false' will make all alarms from this template silent
+      (not propagating to SNS)
+    Type: String
+    AllowedValues:
+    - true
+    - false
+    Default: true
+Conditions:
+  ReducedResouce:
+    Fn::Equals:
+    - Ref: Environment
+    - qa
+Resources:
+  ServiceLogGroup:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.ap-southeast-2.amazonaws.com/hbs-cfn-hbs-stage-core-service-adminportal/76e61a007f2f265cb7bd120c98f133c8.template
+      Parameters:
+        ProjectName:
+          Ref: ProjectName
+        Environment:
+          Ref: Environment
+        Component:
+          Ref: Component
+        Layer:
+          Ref: Layer
+        ServiceName:
+          Ref: ServiceName
+  ServiceTargetGroup:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.ap-southeast-2.amazonaws.com/hbs-cfn-hbs-stage-core-service-adminportal/aeb87a7d73f89cda6abbb4fff92acf6e.template
+      Parameters:
+        ProjectName:
+          Ref: ProjectName
+        Environment:
+          Ref: Environment
+        Component:
+          Ref: Component
+        Layer:
+          Ref: Layer
+        VpcId:
+          Fn::ImportValue:
+            Fn::Sub: hbs-${Environment}-core-network-VpcId
+  ServiceListenerRule:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.ap-southeast-2.amazonaws.com/hbs-cfn-hbs-stage-core-service-adminportal/e0a0157c5b0b357eec13917da38fb5db.template
+      Parameters:
+        ListenerArn:
+          Fn::ImportValue:
+            Fn::Sub: hbs-${Environment}-core-base-MicroserviceListenerArn
+        TargetGroupArn:
+          Fn::GetAtt:
+          - ServiceTargetGroup
+          - Outputs.TargetGroupArn
+  TaskDefinition:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.ap-southeast-2.amazonaws.com/hbs-cfn-hbs-stage-core-service-adminportal/31ca90646c964d5b95a3aed98949a433.template
+      Parameters:
+        ProjectName:
+          Ref: ProjectName
+        Environment:
+          Ref: Environment
+        Component:
+          Ref: Component
+        Layer:
+          Ref: Layer
+        ServiceName:
+          Ref: ServiceName
+        ServiceVersion:
+          Ref: ServiceVersion
+        Memory:
+          Fn::If:
+          - ReducedResouce
+          - 600
+          - 1024
+        MemoryReservation:
+          Fn::If:
+          - ReducedResouce
+          - 512
+          - 768
+        Cpu:
+          Fn::If:
+          - ReducedResouce
+          - 256
+          - 512
+        TaskServiceRoleArn:
+          Fn::ImportValue:
+            Fn::Sub: hbs-${Environment}-core-base-TaskExecutionRoleArn
+  Service:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.ap-southeast-2.amazonaws.com/hbs-cfn-hbs-stage-core-service-adminportal/b149ada78d9ac4c87f85eafcfb7c0dfd.template
+      Parameters:
+        ProjectName:
+          Ref: ProjectName
+        Environment:
+          Ref: Environment
+        Component:
+          Ref: Component
+        Layer:
+          Ref: Layer
+        ClusterArn:
+          Fn::ImportValue:
+            Fn::Sub: hbs-${Environment}-core-base-MicroserviceClusterArn
+        TaskDefinitionArn:
+          Fn::GetAtt:
+          - TaskDefinition
+          - Outputs.TaskDefinitionArn
+        TargetGroupArn:
+          Fn::GetAtt:
+          - ServiceTargetGroup
+          - Outputs.TargetGroupArn

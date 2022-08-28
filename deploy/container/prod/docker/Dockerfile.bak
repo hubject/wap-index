@@ -1,0 +1,16 @@
+FROM frolvlad/alpine-oraclejdk8:slim
+
+VOLUME /tmp
+
+ADD auth-gateway.jar app.jar
+
+# Our application runs on that port so allow hosts to bind to that port
+EXPOSE 8018
+
+RUN sh -c 'touch /app.jar'
+
+ENV JAVA_OPTS="-XX:+UseG1GC -Duser.timezone=UTC -Djavax.net.debug=handshake,data"
+#ENV ALB_MS_HOST=""
+#ENV SPRING_PROFILE=aws-dev
+
+ENTRYPOINT [ "sh", "-c", "exec java $JAVA_OPTS -Dspring.profiles.active=$SPRING_PROFILE -Djava.security.egd=file:/dev/./urandom -jar /app.jar" ]

@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Master template for deployment of the auth gateway service for the CORE
+Parameters:
+  ProjectName:
+    Description: Name of the project
+    Type: String
+    Default: hbs
+  Environment:
+    Description: Name of the environment
+    Type: String
+    Default: dev
+  Component:
+    Description: Name of the component
+    Type: String
+    Default: portal
+  Layer:
+    Description: Name of the layer
+    Type: String
+    Default: service-adminportal-base
+  ServiceName:
+    Description: Name of the service
+    Type: String
+    Default: adminportal
+  ServiceVersion:
+    Description: Version of the service
+    Type: String
+    Default: 1.0.0
+Resources:
+  Ecr:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.ap-southeast-2.amazonaws.com/hbs-cfn-hbs-stage-core-service-adminportal-base/d6e3749c901d2deef22756ef59d077bd.template
+      Parameters:
+        ProjectName:
+          Ref: ProjectName
+        Component:
+          Ref: Component
+        Layer:
+          Ref: Layer
+        ServiceName:
+          Ref: ServiceName

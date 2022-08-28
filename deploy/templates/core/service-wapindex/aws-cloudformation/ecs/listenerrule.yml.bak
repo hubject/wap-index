@@ -1,0 +1,40 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Create listener for application load balancer for cluster"
+
+Parameters:
+#  ProjectName:
+#    Description: "Name of the project"
+#    Type: "String"
+#  Environment:
+#    Description: "Name of the environment"
+#    Type: "String"
+#  Component:
+#    Description: "Name of the component"
+#    Type: "String"
+#    Default: "portal"
+#  Layer:
+#    Description: "Name of the layer"
+#    Type: "String"
+#    Default: "service-adminportal-base"
+  ListenerArn:
+    Description: "ECS application target group for load balancer"
+    Type: "String"
+  TargetGroupArn:
+    Description: "Target group for application load balancer for cluster"
+    Type: "String"
+
+Resources:
+  EcsAlbListenerRule:
+    Type: "AWS::ElasticLoadBalancingV2::ListenerRule"
+    Properties:
+      Actions:
+      - Type: "forward"
+        TargetGroupArn: !Ref TargetGroupArn
+      Conditions:
+      - Field: "path-pattern" # host-header
+        Values:
+        - "/c/portal/*"
+      ListenerArn: !Ref ListenerArn
+      Priority: "2"

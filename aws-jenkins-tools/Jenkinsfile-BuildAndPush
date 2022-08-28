@@ -1,0 +1,256 @@
+def API_BRANCH = params.API_BRANCH ?: "develop"
+def UI_BRANCH = params.UI_BRANCH ?: "develop"
+def RUN_NPM = params.RUN_NPM ?: "true"
+
+// These are used to push the docker images to the ECRs on other environments
+def qaAccountId = params.QA_ACCOUNT_ID
+def productionAccountId = params.PRODUCTION_ACCOUNT_ID
+def Environment = params.Envionment
+def ServiceName = params.ServiceName
+
+// used to determine ECR url for DEV/TEST
+def awsEnvDev = "aws-qa"
+
+//pipeline variables
+def version = null
+def projectProps
+def appDir = params.APP_DIR ?: "wap-index"
+def artifactId = appDir
+
+def awsRegion
+def dockerImageName = ""
+def cloudFormationReleaseParameter
+def dockerRegistry
+def dockerRegistryCreds
+
+node {
+
+    stage('Checkout') {
+        if(RUN_NPM == "true") {
+//            cleanWs()
+        }
+//    stage('Checkout') {
+//        if(RUN_NPM == "true") {
+//            cleanWs()
+//        }
+        dir('wap-index') {
+            checkout scm: [
+                    $class           : 'GitSCM',
+                    branches         : [[name: params.UI_BRANCH]],
+                    userRemoteConfigs: [
+                            [
+                                    url          : "git@github.com:hubject/wap-index.git",
+                                    credentialsId: 'github'
+                            ]
+                    ]
+            ]
+        }
+        def uiCommitHash
+        dir('wap-index') {
+            uiCommitHash = sh(script: 'git log -1 --pretty=format:"%h"', returnStdout: true).trim()
+            version = "$UI_BRANCH-$uiCommitHash".replaceAll("/", "-")
+            projectProps = readYaml file: 'aws/aws-pipeline.yaml'
+        }
+
+        artifactId = projectProps.artifactId
+        dockerImageName = projectProps.dockerImageName
+        dockerPort = projectProps.dockerPort
+        ignoreParent = projectProps.ignoreParent ?: false
+        stackName = projectProps[awsEnvDev].cloudFormationStackName
+        dockerRegistry = projectProps[awsEnvDev].dockerRegistryUrl
+        dockerRegistryCreds = projectProps[awsEnvDev].dockerRegistryCredentialId
+        cloudFormationReleaseParameter = projectProps[awsEnvDev].cloudFormationReleaseParameter
+        awsRegion = projectProps[awsEnvDev].awsRegion ?: "cn-northwest-1"
+    }
+
+    stage('Build Vue') {
+        nodejs(nodeJSInstallationName: 'NodeJS_16.4.2') {
+            if(RUN_NPM == "true") {
+                //sh 'npm install'
+                //sh 'npm run lint'
+            }
+            dir('wap-index') {
+                //sh 'npm run test'
+                sh 'npm install'
+                sh 'npm run build'
+                //sh 'cp -a dist/. public'
+                //sh 'rm -rf dist/dashboard'
+                //sh 'mkdir dist/dashboard'
+                //sh 'cp -r dist/static dist/dashboard'
+                //sh "sed -i.bak 's/static/dashboard\\/static/g' dist/index.html"
+                sh 'cat  dist/index.html'
+                sh 'ls  -al'
+                sh 'mkdir -p dist/c/portal/css'
+                sh 'mkdir -p dist/c/portal/js'
+                sh 'cp -rp dist/css/* dist/c/portal/css/'
+                sh 'cp -rp dist/js/* dist/c/portal/js/'
+                //sh 'ls dist/dashboard'
+                //sh 'mkdir docker'
+                //sh 'cp build/Dockerfile docker'
+                //sh 'mv public docker'
+            }
+        }
+    }
+
+
+    stage("Docker build prepare") {
+        def dockerWorkDir = env.WORKSPACE + '/' + appDir + '/docker'
+        echo dockerWorkDir
+        sh 'mkdir -p ' + dockerWorkDir
+        sh 'mkdir -p ' + dockerWorkDir
+        sh 'cp wap-index/aws-jenkins-tools/Dockerfile '  + dockerWorkDir
+        sh 'cp wap-index/aws-jenkins-tools/nginx.conf ' + dockerWorkDir
+        sh 'cp -r wap-index/dist ' + dockerWorkDir        
+    }
+    //def dockerWorkDir2 = env.WORKSPACE + '/' + appDir + '/deploy/container/jenkins/docker'
+    //stage("Maven build") {
+
+    //    currentBuild.displayName = "#" + currentBuild.number + ": Building - " + cloudFormationReleaseParameter
+    //    currentBuild.description = cloudFormationReleaseParameter + "=" + version
+
+
+    //    echo "Uploading with version $version"
+
+    //    configFileProvider([configFile(fileId: 'a7eb55ae-d707-4843-9e3f-faa32fbbf308', variable: 'NEXUS_SETTINGS')]) {
+    //        dir('hbs-portal-api') {
+    //            withEnv(["JAVA_HOME=${tool 'OpenJDK 8222'}", "PATH+MAVEN=${tool 'Maven 3.6.1'}/bin:${env.JAVA_HOME}/bin"]) {
+    //                sh "mvn -s ${NEXUS_SETTINGS} versions:set \"-DnewVersion=$version\""
+    //                sh 'mvn -B -s ${NEXUS_SETTINGS} clean install -DskipTests=true'
+    //            }
+    //        }
+    //        sh 'mkdir -p ' + dockerWorkDir
+    //        sh 'cp ' + appDir + '/target/*.jar ' + dockerWorkDir + '/' + artifactId + '.jar'
+    //        sh 'mv ' + appDir + '/target/*.jar ' + dockerWorkDir2 + '/' + artifactId + '.jar'
+    //        dir(dockerWorkDir) {
+    //            sh 'ls -l'
+    //        }
+    //        dir(dockerWorkDir2) {
+    //            sh 'ls -l'
+    //        }
+
+    //    }
+    //}
+
+    stage("Docker build & push") {
+        echo 'building image ' + dockerImageName
+        //sh 'cp wap-index/aws-jenkins-tools/Dockerfile'  + dockerWorkDir
+        //sh 'cp wap-index/aws-jenkins-tools/nginx.conf' + dockerWorkDir
+        //sh 'cp -a wap-index/dist' + dockerWorkDir
+        //docker.withTool("default") {
+        docker.withServer("unix:///var/run/docker.sock", "AKIA3GECGIDFE7TWZS25") {
+            docker.withRegistry(dockerRegistry, dockerRegistryCreds) {
+                sh 'ls -l'
+                def image = docker.build(dockerImageName + ":" + version, appDir + "/docker")
+                image.push()
+                image.push('latest')
+                // sh 'docker rmi -f ' + dockerImageName + ':' + version
+                // sh 'docker rmi -f ' + dockerRegistry.replace("http://", "") + '/' + dockerImageName + ':' + version
+                // sh 'docker rmi -f ' + dockerRegistry.replace("http://", "") + '/' + dockerImageName + ':latest'
+            }
+        
+        }
+
+        // push to QA
+        //pushDockerImage(dockerImageName, version, dockerRegistry, dockerRegistryCreds, qaAccountId)
+
+        // push to PROD
+        //pushDockerImage(dockerImageName, version, dockerRegistry, dockerRegistryCreds, productionAccountId)
+    }
+
+    stage("Result") {
+        echo "Branch: ${UI_BRANCH}"
+        echo 'Built version ' + version
+        echo 'CFN Stack Parameters for deployment: ' + cloudFormationReleaseParameter + "=" + version
+        currentBuild.displayName = "#${currentBuild.number}: Built and published - ${cloudFormationReleaseParameter}"
+        currentBuild.description = "Branch name: ${UI_BRANCH}" +
+                "\nCopy deployment stack params from end of build log"
+        //currentBuild.displayName = "#" + currentBuild.number + ": Built and published - " + cloudFormationReleaseParameter
+        //currentBuild.description = "Branch names: ui-" + UI_BRANCH + " - api-" + API_BRANCH + "\nCopy deployment stack params from end of build log"
+        // the deployment stack parameters cannot be put into the build description right here because of a jenkins bug:
+        // jenkins inserts an invisible, hidden space (byte sequence E2 80 8B) every 30 chars. AWS then does not recognize
+        // the parameter name or value correctly; see https://issues.jenkins-ci.org/browse/JENKINS-28022
+    }
+    stage('Auto_deploy') {
+        echo 'Auto deploy to ' + Envionment
+        echo 'Auto deploy ECR Version: ' + version
+        dir('wap-index') {
+            //sh './bin/update-cloudformation-templates.sh -p default -pn hbs -e ${Envionment} -c core -l ${ServiceName} -v ${version}'
+            if (Environment == "prod") {
+                sh "sed -i '80,89 s/^/#/g '   deploy/templates/core/service-adminportal/aws-cloudformation/master.yml"
+                sh "grep -A10 ServiceLogGroup deploy/templates/core/service-adminportal/aws-cloudformation/master.yml"
+            }
+            sh './bin/update-cloudformation-templates.sh -p hbsau -pn hbs -e ' + Envionment + ' -c core -l service-adminportal -v ' + version
+        }
+    }
+}
+
+// function to push docker image to another account
+private void pushDockerImage(dockerImageName, version, dockerRegistry, dockerRegistryCreds, accountId) {
+    docker.withTool("default") {
+        docker.withServer("unix:///var/run/docker.sock", "AKIAJV6WQTOC2JB6NCNQ") {
+            image = docker.image("${dockerImageName}:${version}")
+            docker.withRegistry(dockerRegistry, dockerRegistryCreds) {
+                image.pull()
+            }
+            targetRegistryUrl = dockerRegistry.replaceFirst(/\d+/, accountId)
+            docker.withRegistry(targetRegistryUrl, dockerRegistryCreds) {
+                localRegistry = dockerRegistry.replace("http://", "")
+                targetRegistry = targetRegistryUrl.replace("http://", "")
+                sh "docker tag ${localRegistry}/${dockerImageName}:${version} ${targetRegistry}/${dockerImageName}:${version}"
+                sh "docker push ${targetRegistry}/${dockerImageName}:${version}"
+                sh "docker rmi -f ${localRegistry}/${dockerImageName}:${version}"
+                sh "docker rmi -f ${targetRegistry}/${dockerImageName}:${version}"
+            }
+        }
+    }
+}
+
+//function to extract deployed version
+private String getDeployedVersion(projectProps, awsEnv) {
+    def releaseParam = projectProps.cloudFormationReleaseParameter
+    def stackName = projectProps[awsEnv].cloudFormationStackName
+    def version = sh(script: "aws cloudformation describe-stacks --stack-name ${stackName} --query Stacks[0].Parameters[?ParameterKey==\\`${releaseParam}\\`].ParameterValue --output text", returnStdout: true).trim()
+    return version
+}
+
+private void publishChangeLog(appDir, projectProps, awsEnv, accountId, toVersion) {
+    def prodVersion = null
+    awsRegion = projectProps[awsEnv].awsRegion ?: "cn-northwest-1"
+    withAWS(role: 'deployment-manager', roleAccount: accountId, region: awsRegion) {
+        prodVersion = getDeployedVersion(projectProps, awsEnv)
+    }
+    if (prodVersion == null || prodVersion.startsWith("1.")) {
+        echo "Old version format on prod, skip report"
+    } else {
+        //def scmLink = "https://bitbucket.org/hbs2/hbs-core-api/commits"
+        def scmLink = "https://svn.qualysoft.com/git/hubject/hbs2-core/commit"
+        String changeLog = "<h3>Changelog from commit hash ${prodVersion} to ${toVersion}</h3>"
+        changeLog = changeLog + "<p><b>${prodVersion}</b> is currently installed on <b>${awsEnv}</b></p><ul>"
+
+        withEnv(["LANG=en_US.UTF-8"]) {
+            def gitLog = sh(script: 'git log --no-merges --pretty="%s <i>(%an)</i> [%h]" ' + prodVersion + '...' + toVersion + ' ' + appDir, returnStdout: true).trim()
+            def lines = gitLog.split('\n')
+            lines.each { line ->
+                def lineWithLinks = line.replaceAll(/[A-Z]+\d*\-\d+/, { issueNumber ->
+                    "[<a href=\"https://hubject.atlassian.net/browse/${issueNumber}\" target=\"_blank\">${issueNumber}</a>]"
+                })
+                lineWithLinks = lineWithLinks.replaceFirst(/\[[a-f0-9]{8}\]$/, { hash ->
+                    "<a href=\"${scmLink}/${hash.substring(1, 9)}\" target=\"_blank\">[${hash.substring(1, 9)}]</a>"
+                })
+                changeLog = changeLog + "<li>${lineWithLinks}</li>"
+            }
+            sh "mkdir changelog_${toVersion}"
+            writeFile(file: "changelog_${toVersion}/index.html", text: changeLog, encoding: 'UTF-8')
+        }
+        changeLog += "</ul>"
+        publishHTML(target: [
+                allowMissing         : false,
+                alwaysLinkToLastBuild: false,
+                keepAll              : true,
+                reportDir            : "changelog_${toVersion}",
+                reportFiles          : 'index.html',
+                reportName           : "Changelog compared to PROD (${prodVersion})"
+        ])
+
+    }
+}

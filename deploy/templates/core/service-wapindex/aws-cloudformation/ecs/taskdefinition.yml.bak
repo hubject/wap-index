@@ -1,0 +1,96 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Create task definition for adminportal service"
+
+Parameters:
+  ProjectName:
+    Description: "Name of the project"
+    Type: "String"
+  Environment:
+    Description: "Name of the environment"
+    Type: "String"
+  Component:
+    Description: "Name of the component"
+    Type: "String"
+    Default: "portal"
+  Layer:
+    Description: "Name of the layer"
+    Type: "String"
+    Default: "service-adminportal-base"
+  ServiceName:
+    Description: "Name of the service"
+    Type: "String"
+    Default: "adminportal"
+  ServiceVersion:
+    Description: "Version of the service"
+    Type: "String"
+  TaskServiceRoleArn:
+    Description: "Service role for ECS task"
+    Type: "String"
+  Memory:
+    Description: "Memory will setting"
+    Type: Number
+    Default: 600
+  MemoryReservation:
+    Description: "Reservation Memory will setting"
+    Type: Number
+    Default: 300
+  Cpu:
+    Description: "Cpu will setting"
+    Type: Number
+    Default: 128
+
+Resources:
+  TaskDefinition:
+    Type: "AWS::ECS::TaskDefinition"
+    Properties:
+#      Cpu: 512
+#      ExecutionRoleArn: !Ref TaskServiceRoleArn
+      Family: !Sub "${ProjectName}-${Environment}-${Component}-${Layer}"
+#      Memory: 3072 # 500
+#      NetworkMode: awsvpc
+#      RequiresCompatibilities:
+#      - FARGATE
+#      TaskRoleArn: !Ref TaskServiceRoleArn
+      ContainerDefinitions:
+      -
+        Cpu: !Ref Cpu # new
+        Environment:
+        - Name: "Environment"
+          Value: !Sub "aws-${Environment}"
+        - Name: "ServiceName"
+          Value: !Ref ServiceName
+        - Name: "ServiceVersion"
+          Value: !Ref ServiceVersion
+        - Name: "SPRING_PROFILE"
+          Value: !Sub "aws-${Environment}"
+#        Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/${ProjectName}-${Component}-service-${Layer}:${Environment}-java-${ServiceVersion}"
+#        Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com.cn/${ProjectName}-core-service-${ServiceName}:prod-java-1.0.0"
+
+        Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ProjectName}-${Component}-service-${ServiceName}:${ServiceVersion}"
+
+
+        # Status reason	CannotPullContainerError: API error (404): repository 769072185546.dkr.ecr.cn-northwest-1.amazonaws.com.cn/hbs-core-adminportal-adminportal not found
+        #                                                                     769072185546.dkr.ecr.cn-northwest-1.amazonaws.com.cn/hbs-core-adminportal
+
+        LogConfiguration:
+          LogDriver: "json-file"
+#          Options:
+#            'awslogs-group': !Sub "${ProjectName}-${Environment}-${Component}-${Layer}-LogGroup"
+#            'awslogs-region': !Sub "${AWS::Region}"
+#            'awslogs-stream-prefix': !Sub "${ProjectName}-${Environment}-${Component}-${Layer}"
+        Memory: !Ref Memory
+        MemoryReservation: !Ref MemoryReservation
+        Name: !Sub "${ProjectName}-${Environment}-${Component}-${Layer}-instance"
+        PortMappings:
+        - ContainerPort: "80"
+          Protocol: "tcp"
+
+Outputs:
+  TaskDefinitionArn:
+    Description: "ARN of task defintion for service"
+    Value: !Ref TaskDefinition
+#  TaskDefinitionArn:
+#    Description: Task defintion for service
+#    Value: !GetAtt TaskDefinition.Arn

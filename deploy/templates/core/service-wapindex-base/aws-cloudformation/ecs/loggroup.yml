@@ -1,0 +1,31 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Deploy log group"
+
+Parameters:
+  ProjectName:
+    Description: "Name of the project"
+    Type: "String"
+  Environment:
+    Description: "Name of the environment"
+    Type: "String"
+  Component:
+    Description: "Name of the component"
+    Type: "String"
+    Default: "portal"
+  Layer:
+    Description: "Name of the layer"
+    Type: "String"
+    Default: "service-adminportal-base"
+  ServiceName:
+    Description: "Name of the service"
+    Type: "String"
+    Default: "hello"
+
+Resources:
+  LogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "${ProjectName}-${Environment}-${Component}-service-${ServiceName}-LogGroup"
+      RetentionInDays: "30"

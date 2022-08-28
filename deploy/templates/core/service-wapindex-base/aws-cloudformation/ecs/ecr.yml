@@ -1,0 +1,28 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Create repository for docker images for service"
+
+Parameters:
+  ProjectName:
+    Description: "Name of the project"
+    Type: "String"
+  Component:
+    Description: "Name of the component"
+    Type: "String"
+    Default: "portal"
+  Layer:
+    Description: "Name of the layer"
+    Type: "String"
+    Default: "service-adminportal-base"
+  ServiceName:
+    Description: "Name of the service"
+    Type: "String"
+    Default: "hello"
+
+Resources:
+  MerchantECR:
+    Type: "AWS::ECR::Repository"
+    Properties:
+#      RepositoryName: !Sub "${ProjectName}-${Component}-${Layer}"
+      RepositoryName: !Sub "${ProjectName}-${Component}-service-${ServiceName}"

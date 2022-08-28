@@ -1,0 +1,99 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Create CodeBuild projects"
+
+Parameters:
+  ProjectName:
+    Description: "Name of the project"
+    Type: "String"
+  Environment:
+    Description: "Name of the environment"
+    Type: "String"
+  Component:
+    Description: "Name of the component"
+    Type: "String"
+    Default: "portal"
+  Layer:
+    Description: "Name of the layer"
+    Type: "String"
+    Default: "service-adminportal-base"
+  ServiceName:
+    Description: "Name of the service"
+    Type: "String"
+    Default: "adminportal"
+  ServiceVersion:
+    Description: "Version of the service"
+    Type: "String"
+    Default: "1.0.0"
+  ServiceRole:
+    Description: "Service role for CodeBuild"
+    Type: "String"
+  RepoUser:
+    Description: "nexus user for CodeBuild"
+    Type: "String"
+  RepoPassword:
+    Description: "nexus pw for CodeBuild"
+    Type: "String"
+
+Resources:
+  CodeBuildProject:
+    Type: "AWS::CodeBuild::Project"
+    Properties:
+#      Name: !Sub "${ProjectName}-${Component}-${Layer}-buildDockerImage-${ServiceName}"
+      Name: !Sub "${ProjectName}-${Component}-${Layer}-UploadDockerImage"
+      Description: "Build docker image"
+      ServiceRole: !Ref ServiceRole
+      #BadgeEnabled: true
+      Environment:
+        ComputeType: "BUILD_GENERAL1_SMALL"
+        #        Image: aws/codebuild/ubuntu-base:14.04
+        #Image: "aws/codebuild/java:openjdk-8"
+        Image: "aws/codebuild/docker:18.09.0"
+        Type: "LINUX_CONTAINER"
+        #        PrivilegedMode: true
+        EnvironmentVariables:
+        - Name: "PROJECT_NAME"
+          Value: !Ref ProjectName
+        - Name: "ENVIRONMENT"
+          Value: !Ref Environment
+        - Name: "COMPONENT"
+          Value: !Ref Component
+        - Name: "LAYER"
+          Value: !Ref Layer
+        - Name: "SERVICE_NAME"
+          Value: !Ref ServiceName
+        - Name: "SERVICE_VERSION"
+          Value: !Ref ServiceVersion
+        - Name: "RepoUser"
+          Value: !Ref RepoUser
+        - Name: "RepoPassword"
+          Value: !Ref RepoPassword
+        - Name: "AWS_ACCOUNT_ID"
+          Value: !Sub "${AWS::AccountId}"
+        - Name: "AWS_REGION"
+          Value: !Sub "${AWS::Region}"
+      Source:
+        Auth:
+          Type: "OAUTH"
+#        Location: https://github.com/hubject/hbs-aws-templates-cn.git
+        Location: "https://github.com/hubject/hbs-aws-templates-cn-microservice-adminportal.git"
+        Type: "GITHUB"
+#        BuildSpec: ./deploy/build/core/adminportal/aws-codebuild/buildDockerImage/buildspec.yml
+        BuildSpec: "./build/aws-codebuild/buildDockerImage/buildspec_docker.yml"
+        #        Location: !Sub https://git-codecommit.eu-central-1.amazonaws.com/v1/repos/${ProjectName}
+        #        Type: CODECOMMIT
+#        Type: CODEPIPELINE
+      Artifacts:
+#        Type: CODEPIPELINE
+        Type: "NO_ARTIFACTS"
+      TimeoutInMinutes: "120"
+      Tags:
+      - Key: "Environment"
+        Value: !Ref Environment
+      - Key: "ProjectName"
+        Value: !Ref ProjectName
+      - Key: "Component"
+        Value: !Ref Component
+      - Key: "Layer"
+        Value: !Ref Layer

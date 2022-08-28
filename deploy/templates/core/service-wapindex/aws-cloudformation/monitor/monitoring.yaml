@@ -1,0 +1,92 @@
+Description: >
+  Deploys alarms for a given service
+
+Parameters:
+
+  EnvironmentName:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+
+  AlarmsEnabled:
+    Description: Setting this to 'false' will make all alarms from this template silent (not propagating to SNS)
+    Type: String
+    AllowedValues:
+      - true
+      - false
+    Default: true
+
+  SNSHighPrio:
+    Description: SNS topic for high-priority alarms
+    Type: String
+    Default: arn:aws-cn:sns:cn-northwest-1:769072185546:SNSHighPrio
+
+  LoadBalancerFullName:
+    Description: Load balancer full name
+    Type: String
+
+  TargetGroupFullName:
+    Description: Target group full name
+    Type: String
+
+  ServiceName:
+    Description: Service Name
+    Type: String
+
+  5XXThreshold:
+    Description: threshold to trigger 5XX alert
+    Type: String
+    Default: 0
+
+
+
+Resources:
+
+  UnhealthyMSAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-${ServiceName}-UnhealthyAlarm
+      AlarmDescription: !Sub "At least one task of the ${ServiceName} service is unhealthy"
+      Namespace: 'AWS/ApplicationELB'
+      MetricName: UnHealthyHostCount
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
+      AlarmActions:
+        - !Ref SNSHighPrio
+      ActionsEnabled: !Sub ${AlarmsEnabled}
+      Dimensions:
+        - Name: LoadBalancer
+          Value: !Ref LoadBalancerFullName
+        - Name: TargetGroup
+          Value: !Ref TargetGroupFullName
+      TreatMissingData: notBreaching
+
+  HTTPCodeTarget5XXTooHighAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-${ServiceName}-HTTPCode-Target-5XX-Count
+      AlarmDescription: !Sub "ALB receives more than ${5XXThreshold} 5XX HTTP status codes from target ${ServiceName}"
+      Namespace: 'AWS/ApplicationELB'
+      MetricName: HTTPCode_Target_5XX_Count
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: !Sub ${5XXThreshold}
+      AlarmActions:
+        - !Ref SNSHighPrio
+      ActionsEnabled: !Sub ${AlarmsEnabled}
+      Dimensions:
+        - Name: LoadBalancer
+          Value: !Ref LoadBalancerFullName
+        - Name: TargetGroup
+          Value: !Ref TargetGroupFullName
+      TreatMissingData: notBreaching
+
+Outputs:
+
+  UnhealthyMSAlarm:
+    Description: A reference to the alarm
+    Value: !Ref UnhealthyMSAlarm

@@ -1,0 +1,81 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Create service for auth gateway service"
+
+Parameters:
+  ProjectName:
+    Description: "Name of the project"
+    Type: "String"
+  Environment:
+    Description: "Name of the environment"
+    Type: "String"
+  Component:
+    Description: "Name of the component"
+    Type: "String"
+    Default: "portal"
+  Layer:
+    Description: "Name of the layer"
+    Type: "String"
+    Default: "service-wapindex-base"
+#  ServiceName:
+#    Description: "Name of the service"
+#    Type: "String"
+#    Default: "hello"
+  ClusterArn:
+    Description: "ARN of the microservice cluster"
+    Type: "String"
+#  EcsSecurityGroup:
+#    Description: "Security group for cluster"
+#    Type: "String"
+#  EcsPrivateSubnetRegionA:
+#    Description: "Private subnet for VPC in region A"
+#    Type: "String"
+#  EcsPublicSubnetRegionA:
+#    Description: "Public subnet for VPC in region A"
+#    Type: "String"
+#  EcsPrivateSubnetRegionB:
+#    Description: "Private subnet for VPC in region B"
+#    Type: "String"
+#  EcsPublicSubnetRegionB:
+#    Description: "Public subnet for VPC in region B"
+#    Type: "String"
+  TaskDefinitionArn:
+    Description: "ARN of task definition for service"
+    Type: "String"
+  TargetGroupArn:
+    Description: "Load balancer target group for service"
+    Type: "String"
+
+
+Conditions:
+  ReducedResouce: !Equals [!Ref Environment, "qa" ]
+
+# STOPPED (Task failed ELB health checks in
+#   (target-group arn:aws-cn:elasticloadbalancing:cn-northwest-1:769072185546:targetgroup/hbs-p-Targe-Z46DDRNAFNDO/581a49561a1fc81e))
+
+Resources:
+  Service:
+    Type: "AWS::ECS::Service"
+    Properties:
+      Cluster: !Ref ClusterArn
+      DeploymentConfiguration:
+        MaximumPercent: "200"
+        MinimumHealthyPercent: "10"
+      DesiredCount: !If [ ReducedResouce, 1, 2 ]
+#      LaunchType: FARGATE
+      LoadBalancers:
+      - ContainerName: !Sub "${ProjectName}-${Environment}-${Component}-${Layer}-instance"
+        ContainerPort: "80"
+        TargetGroupArn: !Ref TargetGroupArn
+#      NetworkConfiguration:
+#        AwsvpcConfiguration:
+#          AssignPublicIp: DISABLED
+#          SecurityGroups:
+#          - !Ref EcsSecurityGroup
+#          Subnets:
+#          - !Ref EcsPrivateSubnetRegionA
+#          #             - !Ref EcsPublicSubnetRegionA
+#          - !Ref EcsPrivateSubnetRegionB
+      ServiceName: !Sub "${ProjectName}-${Environment}-${Component}-${Layer}"
+      TaskDefinition: !Ref TaskDefinitionArn

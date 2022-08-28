@@ -1,0 +1,81 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Deploy target group"
+
+Parameters:
+  ProjectName:
+    Description: "Name of the project"
+    Type: "String"
+  Environment:
+    Description: "Name of the environment"
+    Type: "String"
+  Component:
+    Description: "Name of the component"
+    Type: "String"
+    Default: "portal"
+  Layer:
+    Description: "Name of the layer"
+    Type: "String"
+    Default: "service-adminportal-base"
+  VpcId:
+    Description: "ID of the VPC"
+    Type: "AWS::EC2::VPC::Id"
+
+Resources:
+  TargetGroup:
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    Properties:
+      #      HealthCheckIntervalSeconds: Integer
+      #      HealthCheckPath: String
+      #      HealthCheckPort: String
+      #      HealthCheckProtocol: String
+      #      HealthCheckTimeoutSeconds: Integer
+      #      HealthyThresholdCount: Integer
+      #      Matcher: Matcher
+      #      Name: String
+      Matcher:
+          HttpCode: 200-299
+      HealthCheckIntervalSeconds: 120
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Port: "80"
+      Protocol: "HTTP"
+      TargetGroupAttributes:
+          - Key: stickiness.enabled
+            Value: true
+          - Key: stickiness.type
+            Value: lb_cookie
+          - Key: stickiness.lb_cookie.duration_seconds
+            Value: 14400
+          - Key: deregistration_delay.timeout_seconds
+            Value: 20
+      #      Tags:
+      #        - Resource Tag
+      #      TargetGroupAttributes:
+      #        - TargetGroupAttributes
+      #      Targets:
+      #        - TargetDescription
+      TargetType: "instance" # ip
+      #      UnhealthyThresholdCount: Integer
+      VpcId: !Ref VpcId
+      Tags:
+      - Key: "Environment"
+        Value: !Ref Environment
+      - Key: "ProjectName"
+        Value: !Ref ProjectName
+      - Key: "Component"
+        Value: !Ref Component
+      - Key: "Layer"
+        Value: !Ref Layer
+
+
+Outputs:
+  TargetGroupArn:
+    Description: "ARN of the target group for application load balancer for cluster for microservice"
+    Value: !Ref TargetGroup
+  TargetGroupFullName:
+    Description: "ARN of the target group for application load balancer for cluster for microservice"
+    Value: !GetAtt TargetGroup.TargetGroupFullName

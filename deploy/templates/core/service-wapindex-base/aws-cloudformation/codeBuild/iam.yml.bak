@@ -1,0 +1,92 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Create CodeBuild IAM service roles"
+
+Parameters:
+  ProjectName:
+    Description: "Name of the project"
+    Type: "String"
+  Environment:
+    Description: "Name of the environment"
+    Type: "String"
+  Component:
+    Description: "Name of the component"
+    Type: "String"
+    Default: "core"
+  Layer:
+    Description: "Name of the layer"
+    Type: "String"
+    Default: "service-gateway-base"
+
+Resources:
+  CodeBuildServiceRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub "${ProjectName}-${Environment}-${Component}-${Layer}-codebuild-service-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Action:
+          - "sts:AssumeRole"
+          Effect: "Allow"
+          Principal:
+            Service:
+            - "codebuild.amazonaws.com"
+      #              - "logs.amazonaws.com"
+      #              - "events.amazonaws.com"
+      Policies:
+      - PolicyName: !Sub "${ProjectName}-${Environment}-${Component}-${Layer}-buildDockerImage-policy"
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+          - Effect: "Allow"
+            Resource:
+            - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*"
+            - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${ProjectName}-${Environment}-${Component}-${Layer}-buildDockerImage-${Environment}"
+            - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${ProjectName}-${Environment}-${Component}-${Layer}-buildDockerImage-${Environment}/*"
+            Action:
+            - "logs:CreateLogGroup"
+            - "logs:CreateLogStream"
+            - "logs:PutLogEvents"
+          #          - Effect: Allow
+          #            Resource:
+          #            - !Sub 'arn:aws:s3:::codepipeline-${AWS::Region}-*'
+          ##            - !Sub 'arn:aws:s3:::codepipeline-${AWS::Region}-*/*'
+          #            Action:
+          #            - 's3:GetObject'
+          #            - 's3:GetObjectVersion'
+          #            - 's3:PutObject'
+          #          - Effect: Allow
+          #            Resource:
+          #            - !Sub 'arn:aws:codecommit:${AWS::Region}:${AWS::AccountId}:shopelino-core'
+          #            Action:
+          #            - 'codecommit:GitPull'
+          - Effect: "Allow"
+            Resource:
+            - "*"
+            #            - !Sub 'arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/*'
+            # shopelino-core-merchant
+            Action:
+            - "ecr:GetAuthorizationToken"
+            - "ecr:BatchCheckLayerAvailability"
+            - "ecr:GetDownloadUrlForLayer"
+            - "ecr:GetRepositoryPolicy"
+            - "ecr:DescribeRepositories"
+            - "ecr:ListImages"
+            - "ecr:DescribeImages"
+            - "ecr:BatchGetImage"
+            - "ecr:InitiateLayerUpload"
+            - "ecr:UploadLayerPart"
+            - "ecr:CompleteLayerUpload"
+            - "ecr:PutImage"
+          - Effect: "Allow"
+            Resource:
+            - "*"
+            Action:
+            - "s3:GetObject"
+            - "s3:GetObjectVersion"
+Outputs:
+  ServiceRole:
+    Description: "Service role for CodeBuild"
+    Value: !Ref CodeBuildServiceRole

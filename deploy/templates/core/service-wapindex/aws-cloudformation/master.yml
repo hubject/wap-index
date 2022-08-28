@@ -1,0 +1,189 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Master template for deployment of the adminportal service for the CORE"
+
+#Metadata:
+#  AWS::CloudFormation::Interface:
+#    ParameterGroups:
+#    - Label:
+#        default: "General information"
+#      Parameters:
+#      - ProjectName
+#      - Environment
+#      - Component
+#    - Label:
+#        default: "VPC setup"
+#      Parameters:
+#      - VpcCidrBlock
+
+Parameters:
+  ProjectName:
+    Description: "Name of the project"
+    Type: "String"
+    Default: "hbs"
+  Environment:
+    Description: "Name of the environment"
+    Type: "String"
+    Default: "dev"
+  Component:
+    Description: "Name of the component"
+    Type: "String"
+    Default: "core"
+  Layer:
+    Description: "Name of the layer"
+    Type: "String"
+    Default: "service-wapindex-base"
+  ServiceName:
+    Description: "Name of the service"
+    Type: "String"
+    Default: "adminportal"
+  ServiceVersion:
+    Description: "Version of the service"
+    Type: "String"
+    Default: "1.0.0"
+  AlarmsEnabled:
+    Description: Setting this to 'false' will make all alarms from this template silent (not propagating to SNS)
+    Type: String
+    AllowedValues:
+      - true
+      - false
+    Default: true    
+
+Conditions:
+  ReducedResouce: !Equals [!Ref Environment, "qa" ]
+
+
+Resources:
+#  CodeBuildIam:
+#    Type: "AWS::CloudFormation::Stack"
+#    Properties:
+#      TemplateURL: "./codeBuild/iam.yml"
+#      Parameters:
+#        Environment: !Ref Environment
+#        ProjectName: !Ref ProjectName
+#
+#  CodeBuildProject:
+#    Type: "AWS::CloudFormation::Stack"
+#    Properties:
+#      TemplateURL: "./codeBuild/project.yml"
+#      Parameters:
+#        ProjectName: !Ref ProjectName
+#        Environment: !Ref Environment
+#        Component: !Ref Component
+#        Layer: !Ref Layer
+##        ServiceName: !Ref ServiceName
+#        ServiceVersion: !Ref ServiceVersion
+#        ServiceRole: !GetAtt CodeBuildIam.Outputs.ServiceRole
+##        ServiceRole:
+##          Fn::ImportValue: !Sub ${Environment}-${ProjectName}-base-CodeBuildServiceRole
+  ServiceLogGroup:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: "./ecs/loggroup.yml"
+      Parameters:
+        ProjectName: !Ref ProjectName
+        Environment: !Ref Environment
+        Component: !Ref Component
+        Layer: !Ref Layer
+        ServiceName: !Ref ServiceName
+  ServiceTargetGroup:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: "./ecs/targetgroup.yml"
+      Parameters:
+        ProjectName: !Ref ProjectName
+        Environment: !Ref Environment
+        Component: !Ref Component
+        Layer: !Ref Layer
+        VpcId:
+          Fn::ImportValue: !Sub "hbs-${Environment}-core-network-VpcId"
+  ServiceListenerRule:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: "./ecs/listenerrule.yml"
+      Parameters:
+        ListenerArn:
+          Fn::ImportValue: !Sub "hbs-${Environment}-core-base-MicroserviceListenerArn"
+        TargetGroupArn: !GetAtt ServiceTargetGroup.Outputs.TargetGroupArn
+#  Ecr:
+#    Type: "AWS::CloudFormation::Stack"
+#    Properties:
+#      TemplateURL: "./ecs/ecr.yml"
+#      Parameters:
+#        ProjectName: !Ref ProjectName
+#        Component: !Ref Component
+#        Layer: !Ref Layer
+##        ServiceName: !Ref ServiceName
+
+  TaskDefinition:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: "./ecs/taskdefinition.yml"
+      Parameters:
+        ProjectName: !Ref ProjectName
+        Environment: !Ref Environment
+        Component: !Ref Component
+        Layer: !Ref Layer
+        ServiceName: !Ref ServiceName
+        ServiceVersion: !Ref ServiceVersion
+        Memory: !If [ ReducedResouce, 256, 512 ]
+        MemoryReservation: !If [ ReducedResouce, 128, 256 ]
+        Cpu: !If [ ReducedResouce, 128, 256 ]
+        TaskServiceRoleArn:
+          Fn::ImportValue: !Sub "hbs-${Environment}-core-base-TaskExecutionRoleArn"
+
+  Service:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: "./ecs/service.yml"
+      Parameters:
+        ProjectName: !Ref ProjectName
+        Environment: !Ref Environment
+        Component: !Ref Component
+        Layer: !Ref Layer
+#        ServiceName: !Ref ServiceName
+        ClusterArn:
+          Fn::ImportValue: !Sub "hbs-${Environment}-core-base-MicroserviceClusterArn"
+        TaskDefinitionArn: !GetAtt TaskDefinition.Outputs.TaskDefinitionArn
+        TargetGroupArn: !GetAtt ServiceTargetGroup.Outputs.TargetGroupArn
+#        Cluster:
+#          Fn::ImportValue: !Sub "hbs-${Environment}-${Component}-base-MicroserviceClusterName"
+#        ServiceRole:
+#          Fn::ImportValue: !Sub "hbs-${Environment}-${Component}-base-MicroserviceCluster-ServiceRole"
+#  LogGroupLambdaInvokePermission:
+#    Type: AWS::Lambda::Permission
+#    Properties:
+#      FunctionName: !Ref LogToESLambdaArn
+#      Action: "lambda:InvokeFunction"
+#      Principal: "logs.cn-northwest-1.amazonaws.com.cn"
+#      SourceArn: !Sub "arn:aws-cn:logs:${AWS::Region}:${AWS::AccountId}:log-group:${ProjectName}-${Environment}-${Component}-service-wapindex-LogGroup:*"
+#      #SourceArn: !Sub "arn:aws-cn:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AWS::StackName}:*"
+#      SourceAccount:
+#        Ref: "AWS::AccountId"
+#
+#  Monitoring:
+#    Type: AWS::CloudFormation::Stack
+#    Properties:
+#      TemplateURL: ./monitor/monitoring.yaml
+#      Parameters:
+#        EnvironmentName: !Ref Environment
+#        SNSHighPrio:
+#          Fn::ImportValue: !Sub ${ProjectName}-${Environment}-${Component}-base-SNSHighPrio
+#        AlarmsEnabled: !Ref AlarmsEnabled
+#        LoadBalancerFullName:
+#           Fn::ImportValue: !Sub ${ProjectName}-${Environment}-${Component}-base-LoadBalancerFullName
+#        TargetGroupFullName: !GetAtt ServiceTargetGroup.Outputs.TargetGroupFullName
+#        ServiceName: core
+#        5XXThreshold: 5
+
+
+
+#  SubscriptionFilter:
+#    Type: AWS::Logs::SubscriptionFilter
+#    Properties:
+#      #LogGroupName: !Sub ${CloudWatchLogsGroup}
+#      LogGroupName: !Sub "${ProjectName}-${Environment}-${Component}-service-wapindex-LogGroup"
+#      FilterPattern: ""
+#      #DestinationArn: !Sub ${LogToESLambdaArn}
+#      DestinationArn:  !Ref LogToESLambdaArn
