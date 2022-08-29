@@ -79,8 +79,9 @@ node {
                 //sh 'cp -r dist/static dist/dashboard'
                 //sh "sed -i.bak 's/static/dashboard\\/static/g' dist/index.html"
                 //sh 'cat  dist/index.html'
-                sh 'ls  -al'
                 sh 'mkdir -p disk/d/portal/'
+                sh 'ls  -al'
+                sh 'ls  -al dist'
                 //sh 'mkdir -p dist/d/portal/js'
                 sh 'cp -rp index.html vue.min.js  disk/d/portal/'
                 //sh 'cp -rp dist/js/* dist/d/portal/js/'
