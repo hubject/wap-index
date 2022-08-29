@@ -80,9 +80,9 @@ node {
                 //sh "sed -i.bak 's/static/dashboard\\/static/g' dist/index.html"
                 //sh 'cat  dist/index.html'
                 sh 'ls  -al'
-                sh 'mkdir -p d/portal/'
+                sh 'mkdir -p disk/d/portal/'
                 //sh 'mkdir -p dist/d/portal/js'
-                sh 'cp -rp index.html vue.min.js  d/portal/'
+                sh 'cp -rp index.html vue.min.js  disk/d/portal/'
                 //sh 'cp -rp dist/js/* dist/d/portal/js/'
                 //sh 'ls dist/dashboard'
                 //sh 'mkdir docker'
@@ -100,9 +100,9 @@ node {
         sh 'mkdir -p ' + dockerWorkDir
         sh 'cp EMP-wapindex/aws-jenkins-tools/Dockerfile '  + dockerWorkDir
         sh 'cp EMP-wapindex/aws-jenkins-tools/nginx.conf ' + dockerWorkDir
-        sh 'cp -r EMP-wapindex/d ' + dockerWorkDir        
-        sh 'cp -r EMP-wapindex/index.html ' + dockerWorkDir        
-        sh 'cp -r EMP-wapindex/vue.min.js ' + dockerWorkDir        
+        sh 'cp -r EMP-wapindex/dist/d ' + dockerWorkDir        
+        sh 'cp -r EMP-wapindex/dist/index.html ' + dockerWorkDir        
+        sh 'cp -r EMP-wapindex/dist/vue.min.js ' + dockerWorkDir        
     }
     //def dockerWorkDir2 = env.WORKSPACE + '/' + appDir + '/deploy/container/jenkins/docker'
     //stage("Maven build") {
