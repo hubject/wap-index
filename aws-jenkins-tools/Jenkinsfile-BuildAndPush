@@ -80,9 +80,9 @@ node {
                 //sh "sed -i.bak 's/static/dashboard\\/static/g' dist/index.html"
                 //sh 'cat  dist/index.html'
                 sh 'ls  -al'
-                sh 'mkdir -p dist/d/portal/'
+                sh 'mkdir -p d/portal/'
                 //sh 'mkdir -p dist/d/portal/js'
-                sh 'cp -rp ./* dist/d/portal/'
+                sh 'cp -rp index.html vue.min.js  d/portal/'
                 //sh 'cp -rp dist/js/* dist/d/portal/js/'
                 //sh 'ls dist/dashboard'
                 //sh 'mkdir docker'
@@ -100,7 +100,9 @@ node {
         sh 'mkdir -p ' + dockerWorkDir
         sh 'cp EMP-wapindex/aws-jenkins-tools/Dockerfile '  + dockerWorkDir
         sh 'cp EMP-wapindex/aws-jenkins-tools/nginx.conf ' + dockerWorkDir
-        sh 'cp -r EMP-wapindex/* ' + dockerWorkDir        
+        sh 'cp -r EMP-wapindex/d ' + dockerWorkDir        
+        sh 'cp -r EMP-wapindex/index.html ' + dockerWorkDir        
+        sh 'cp -r EMP-wapindex/vue.min.js ' + dockerWorkDir        
     }
     //def dockerWorkDir2 = env.WORKSPACE + '/' + appDir + '/deploy/container/jenkins/docker'
     //stage("Maven build") {
@@ -177,7 +179,7 @@ node {
             //sh './bin/update-cloudformation-templates.sh -p default -pn hbs -e ${Envionment} -c core -l ${ServiceName} -v ${version}'
             if (Environment == "prod") {
                 sh "sed -i '80,89 s/^/#/g '   deploy/templates/core/service-wapindex/aws-cloudformation/master.yml"
-                sh 'cat  dist/index.html'
+                sh 'cat  index.html'
                 sh "grep -A10 ServiceLogGroup deploy/templates/core/service-wapindex/aws-cloudformation/master.yml"
             }
             sh './bin/update-cloudformation-templates.sh -p hbsau -pn hbs -e ' + Envionment + ' -c core -l service-wapindex -v ' + version
