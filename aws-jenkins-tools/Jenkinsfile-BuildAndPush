@@ -101,8 +101,8 @@ node {
         sh 'cp EMP-wapindex/aws-jenkins-tools/Dockerfile '  + dockerWorkDir
         sh 'cp EMP-wapindex/aws-jenkins-tools/nginx.conf ' + dockerWorkDir
         sh 'cp -r EMP-wapindex/dist/d ' + dockerWorkDir        
-        sh 'cp -r EMP-wapindex/dist/index.html ' + dockerWorkDir        
-        sh 'cp -r EMP-wapindex/dist/vue.min.js ' + dockerWorkDir        
+        sh 'cp -r EMP-wapindex/index.html ' + dockerWorkDir        
+        sh 'cp -r EMP-wapindex/vue.min.js ' + dockerWorkDir        
     }
     //def dockerWorkDir2 = env.WORKSPACE + '/' + appDir + '/deploy/container/jenkins/docker'
     //stage("Maven build") {
