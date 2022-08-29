@@ -71,19 +71,19 @@ node {
             }
             dir('EMP-wapindex') {
                 //sh 'npm run test'
-                sh 'npm install'
-                sh 'npm run build'
+                //sh 'npm install'
+                //sh 'npm run build'
                 //sh 'cp -a dist/. public'
                 //sh 'rm -rf dist/dashboard'
                 //sh 'mkdir dist/dashboard'
                 //sh 'cp -r dist/static dist/dashboard'
                 //sh "sed -i.bak 's/static/dashboard\\/static/g' dist/index.html"
-                sh 'cat  dist/index.html'
+                //sh 'cat  dist/index.html'
                 sh 'ls  -al'
-                sh 'mkdir -p dist/d/portal/css'
-                sh 'mkdir -p dist/d/portal/js'
-                sh 'cp -rp dist/css/* dist/d/portal/css/'
-                sh 'cp -rp dist/js/* dist/d/portal/js/'
+                sh 'mkdir -p dist/d/portal/'
+                //sh 'mkdir -p dist/d/portal/js'
+                sh 'cp -rp ./* dist/d/portal/'
+                //sh 'cp -rp dist/js/* dist/d/portal/js/'
                 //sh 'ls dist/dashboard'
                 //sh 'mkdir docker'
                 //sh 'cp build/Dockerfile docker'
@@ -100,7 +100,7 @@ node {
         sh 'mkdir -p ' + dockerWorkDir
         sh 'cp EMP-wapindex/aws-jenkins-tools/Dockerfile '  + dockerWorkDir
         sh 'cp EMP-wapindex/aws-jenkins-tools/nginx.conf ' + dockerWorkDir
-        sh 'cp -r EMP-wapindex/dist ' + dockerWorkDir        
+        sh 'cp -r EMP-wapindex/* ' + dockerWorkDir        
     }
     //def dockerWorkDir2 = env.WORKSPACE + '/' + appDir + '/deploy/container/jenkins/docker'
     //stage("Maven build") {
