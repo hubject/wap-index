@@ -1,7 +1,7 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: "Create task definition for adminportal service"
+Description: "Create task definition for wapindex service"
 
 Parameters:
   ProjectName:
@@ -21,7 +21,7 @@ Parameters:
   ServiceName:
     Description: "Name of the service"
     Type: "String"
-    Default: "adminportal"
+    Default: "wapindex"
   ServiceVersion:
     Description: "Version of the service"
     Type: "String"
@@ -71,8 +71,8 @@ Resources:
         Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ProjectName}-${Component}-service-${ServiceName}:${ServiceVersion}"
 
 
-        # Status reason	CannotPullContainerError: API error (404): repository 769072185546.dkr.ecr.cn-northwest-1.amazonaws.com.cn/hbs-core-adminportal-adminportal not found
-        #                                                                     769072185546.dkr.ecr.cn-northwest-1.amazonaws.com.cn/hbs-core-adminportal
+        # Status reason	CannotPullContainerError: API error (404): repository 769072185546.dkr.ecr.cn-northwest-1.amazonaws.com.cn/hbs-core-wapindex-wapindex not found
+        #                                                                     769072185546.dkr.ecr.cn-northwest-1.amazonaws.com.cn/hbs-core-wapindex
 
         LogConfiguration:
           LogDriver: "json-file"

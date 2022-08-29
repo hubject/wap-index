@@ -16,11 +16,11 @@ Parameters:
   Layer:
     Description: Name of the layer
     Type: String
-    Default: service-adminportal-base
+    Default: service-wapindex-base
   ServiceName:
     Description: Name of the service
     Type: String
-    Default: adminportal
+    Default: wapindex
   ServiceVersion:
     Description: Version of the service
     Type: String
@@ -29,7 +29,7 @@ Resources:
   Ecr:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.ap-southeast-2.amazonaws.com/hbs-cfn-hbs-stage-core-service-adminportal-base/d6e3749c901d2deef22756ef59d077bd.template
+      TemplateURL: https://s3.ap-southeast-2.amazonaws.com/hbs-cfn-hbs-stage-core-service-wapindex-base/d6e3749c901d2deef22756ef59d077bd.template
       Parameters:
         ProjectName:
           Ref: ProjectName

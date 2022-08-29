@@ -17,7 +17,7 @@ Parameters:
 #  Layer:
 #    Description: "Name of the layer"
 #    Type: "String"
-#    Default: "service-adminportal-base"
+#    Default: "service-wapindex-base"
   ListenerArn:
     Description: "ECS application target group for load balancer"
     Type: "String"
@@ -35,6 +35,6 @@ Resources:
       Conditions:
       - Field: "path-pattern" # host-header
         Values:
-        - "/c/portal/*"
+        - "/d/portal/*"
       ListenerArn: !Ref ListenerArn
-      Priority: "2"
+      Priority: "3"

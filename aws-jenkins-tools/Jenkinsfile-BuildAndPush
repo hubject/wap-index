@@ -39,7 +39,7 @@ node {
                     branches         : [[name: params.UI_BRANCH]],
                     userRemoteConfigs: [
                             [
-                                    url          : "git@github.com:hubject/EMP-wapindex.git",
+                                    url          : "git@github.com:hubject/wap-index.git",
                                     credentialsId: 'github'
                             ]
                     ]

@@ -1,7 +1,7 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: "Master template for deployment of the adminportal service for the CORE"
+Description: "Master template for deployment of the wapindex service for the CORE"
 
 #Metadata:
 #  AWS::CloudFormation::Interface:
@@ -33,11 +33,11 @@ Parameters:
   Layer:
     Description: "Name of the layer"
     Type: "String"
-    Default: "service-adminportal-base"
+    Default: "service-wapindex-base"
   ServiceName:
     Description: "Name of the service"
     Type: "String"
-    Default: "adminportal"
+    Default: "wapindex"
   ServiceVersion:
     Description: "Version of the service"
     Type: "String"
@@ -157,7 +157,7 @@ Resources:
 #      FunctionName: !Ref LogToESLambdaArn
 #      Action: "lambda:InvokeFunction"
 #      Principal: "logs.cn-northwest-1.amazonaws.com.cn"
-#      SourceArn: !Sub "arn:aws-cn:logs:${AWS::Region}:${AWS::AccountId}:log-group:${ProjectName}-${Environment}-${Component}-service-adminportal-LogGroup:*"
+#      SourceArn: !Sub "arn:aws-cn:logs:${AWS::Region}:${AWS::AccountId}:log-group:${ProjectName}-${Environment}-${Component}-service-wapindex-LogGroup:*"
 #      #SourceArn: !Sub "arn:aws-cn:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AWS::StackName}:*"
 #      SourceAccount:
 #        Ref: "AWS::AccountId"
@@ -183,7 +183,7 @@ Resources:
 #    Type: AWS::Logs::SubscriptionFilter
 #    Properties:
 #      #LogGroupName: !Sub ${CloudWatchLogsGroup}
-#      LogGroupName: !Sub "${ProjectName}-${Environment}-${Component}-service-adminportal-LogGroup"
+#      LogGroupName: !Sub "${ProjectName}-${Environment}-${Component}-service-wapindex-LogGroup"
 #      FilterPattern: ""
 #      #DestinationArn: !Sub ${LogToESLambdaArn}
 #      DestinationArn:  !Ref LogToESLambdaArn

@@ -38,11 +38,11 @@ Parameters:
   Layer:
     Description: "Name of the layer"
     Type: "String"
-    Default: "service-adminportal-base"
+    Default: "service-wapindex-base"
   ServiceName:
     Description: "Name of the service"
     Type: "String"
-    Default: "adminportal"
+    Default: "wapindex"
   ServiceVersion:
     Description: "Version of the service"
     Type: "String"

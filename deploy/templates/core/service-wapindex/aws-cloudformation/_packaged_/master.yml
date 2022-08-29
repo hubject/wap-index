@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Master template for deployment of the adminportal service for the CORE
+Description: Master template for deployment of the wapindex service for the CORE
 Parameters:
   ProjectName:
     Description: Name of the project
@@ -20,7 +20,7 @@ Parameters:
   ServiceName:
     Description: Name of the service
     Type: String
-    Default: adminportal
+    Default: wapindex
   ServiceVersion:
     Description: Version of the service
     Type: String

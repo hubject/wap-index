@@ -17,7 +17,7 @@ Parameters:
   Layer:
     Description: "Name of the layer"
     Type: "String"
-    Default: "adminportal"
+    Default: "wapindex"
   ServiceName:
     Description: "Name of the service"
     Type: "String"

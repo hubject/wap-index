@@ -1,0 +1,59 @@
+artifactId: wapindex
+dockerImageName: hbs-core-service-wapindex
+dockerPort: 8000
+healthCheckUrl: /eureka-backend/health
+cloudFormationReleaseParameter: EurekaRelease
+serviceNamePrefix: WapService
+aws-dev:
+  clusterName: hbs-dev-env-ms
+  serviceFamily: hbs-dev-env-eureka-service  
+  targetGroupName: tg-hbs-dev-env-eureka
+  awsRegion: ap-southeast-2  
+  cloudFormationStackName: hbs-dev-env
+  dockerRegistryUrl: http://653334614828.dkr.ecr.ap-southeast-2.amazonaws.com
+  dockerRegistryCredentialId: ecr:ap-southeast-2:4eac0d17-6c1b-4b78-b323-5832ab48a413
+aws-test:
+  clusterName: hbs-test-env-ms
+  serviceFamily: hbs-test-env-eureka-service
+  targetGroupName: tg-hbs-test-env-eureka
+  awsRegion: ap-southeast-2
+  cloudFormationStackName: hbs-test-env
+  dockerRegistryUrl: http://653334614828.dkr.ecr.ap-southeast-2.amazonaws.com
+  dockerRegistryCredentialId: ecr:ap-southeast-2:4eac0d17-6c1b-4b78-b323-5832ab48a413
+aws-qa:
+  awsRegion: ap-southeast-2
+  clusterName: hbs-qa-core-elb-cluster-microservice
+  serviceFamily: hbs-qa-core-service-wapindex-api
+  serviceNamePrefix: hbs-sandbox-env-eurekaApplication
+  targetGroupName: hbs-q-Targe-15R98LEU1I3NY
+  cloudFormationReleaseParameter: eurekaRelease
+  cloudFormationStackName: hbs-qa-core-service-wapindex-api
+  dockerRegistryUrl: http://809947040224.dkr.ecr.ap-southeast-2.amazonaws.com
+  dockerRegistryCredentialId: ecr:ap-southeast-2:4eac0d17-6c1b-4b78-b323-5832ab48a413
+aws-prod:
+  awsRegion: ap-southeast-2
+  clusterName: hbs-prod-core-elb-cluster-microservice
+  serviceFamily: hbs-prod-core-service-wapindex-api
+  serviceNamePrefix: hbs-sandbox-env-eurekaApplication
+  targetGroupName: hbs-p-Targe-12BRK7MFIS2HS
+  cloudFormationReleaseParameter: eurekaRelease
+  cloudFormationStackName: hbs-prod-core-service-wapindex-api
+  dockerRegistryUrl: http://809947040224.dkr.ecr.ap-southeast-2.amazonaws.com
+  dockerRegistryCredentialId: ecr:ap-southeast-2:4eac0d17-6c1b-4b78-b323-5832ab48a413
+aws-sandbox:
+  awsRegion: eu-west-1
+  clusterName: eu-west-1
+  serviceNamePrefix: hbs-sandbox-env-PartnerService
+  targetGroupName: tg-hbs-sandbox-env-hbs2-eureka-ms
+  cloudFormationStackName: hbs-sandbox-env
+  dockerRegistryUrl: http://653334614828.dkr.ecr.eu-west-1.amazonaws.com
+  dockerRegistryCredentialId: ecr:eu-west-1:4eac0d17-6c1b-4b78-b323-5832ab48a413
+aws-dev2:
+  clusterName: hbs2-dev-env-ms
+  serviceFamily: hbs2-dev-env-eureka-service
+  targetGroupName: tg-hbs2-dev-env-eureka
+  awsRegion: ap-southeast-2
+  cloudFormationStackName: hbs-dev2-env
+  dockerRegistryUrl: http://653334614828.dkr.ecr.ap-southeast-2.amazonaws.com
+  dockerRegistryCredentialId: ecr:ap-southeast-2:4eac0d17-6c1b-4b78-b323-5832ab48a413
+  

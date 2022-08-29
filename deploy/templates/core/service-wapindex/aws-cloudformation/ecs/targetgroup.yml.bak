@@ -17,7 +17,7 @@ Parameters:
   Layer:
     Description: "Name of the layer"
     Type: "String"
-    Default: "service-adminportal-base"
+    Default: "service-wapindex-base"
   VpcId:
     Description: "ID of the VPC"
     Type: "AWS::EC2::VPC::Id"

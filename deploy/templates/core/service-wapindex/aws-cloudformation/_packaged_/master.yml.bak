@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Master template for deployment of the adminportal service for the CORE
+Description: Master template for deployment of the wapindex service for the CORE
 Parameters:
   ProjectName:
     Description: Name of the project
@@ -16,11 +16,11 @@ Parameters:
   Layer:
     Description: Name of the layer
     Type: String
-    Default: service-adminportal-base
+    Default: service-wapindex-base
   ServiceName:
     Description: Name of the service
     Type: String
-    Default: adminportal
+    Default: wapindex
   ServiceVersion:
     Description: Version of the service
     Type: String
@@ -42,7 +42,7 @@ Resources:
   ServiceLogGroup:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.ap-southeast-2.amazonaws.com/hbs-cfn-hbs-stage-core-service-adminportal/76e61a007f2f265cb7bd120c98f133c8.template
+      TemplateURL: https://s3.ap-southeast-2.amazonaws.com/hbs-cfn-hbs-stage-core-service-wapindex/76e61a007f2f265cb7bd120c98f133c8.template
       Parameters:
         ProjectName:
           Ref: ProjectName
@@ -57,7 +57,7 @@ Resources:
   ServiceTargetGroup:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.ap-southeast-2.amazonaws.com/hbs-cfn-hbs-stage-core-service-adminportal/aeb87a7d73f89cda6abbb4fff92acf6e.template
+      TemplateURL: https://s3.ap-southeast-2.amazonaws.com/hbs-cfn-hbs-stage-core-service-wapindex/aeb87a7d73f89cda6abbb4fff92acf6e.template
       Parameters:
         ProjectName:
           Ref: ProjectName
@@ -73,7 +73,7 @@ Resources:
   ServiceListenerRule:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.ap-southeast-2.amazonaws.com/hbs-cfn-hbs-stage-core-service-adminportal/e0a0157c5b0b357eec13917da38fb5db.template
+      TemplateURL: https://s3.ap-southeast-2.amazonaws.com/hbs-cfn-hbs-stage-core-service-wapindex/e0a0157c5b0b357eec13917da38fb5db.template
       Parameters:
         ListenerArn:
           Fn::ImportValue:
@@ -85,7 +85,7 @@ Resources:
   TaskDefinition:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.ap-southeast-2.amazonaws.com/hbs-cfn-hbs-stage-core-service-adminportal/31ca90646c964d5b95a3aed98949a433.template
+      TemplateURL: https://s3.ap-southeast-2.amazonaws.com/hbs-cfn-hbs-stage-core-service-wapindex/31ca90646c964d5b95a3aed98949a433.template
       Parameters:
         ProjectName:
           Ref: ProjectName
@@ -120,7 +120,7 @@ Resources:
   Service:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.ap-southeast-2.amazonaws.com/hbs-cfn-hbs-stage-core-service-adminportal/b149ada78d9ac4c87f85eafcfb7c0dfd.template
+      TemplateURL: https://s3.ap-southeast-2.amazonaws.com/hbs-cfn-hbs-stage-core-service-wapindex/b149ada78d9ac4c87f85eafcfb7c0dfd.template
       Parameters:
         ProjectName:
           Ref: ProjectName
