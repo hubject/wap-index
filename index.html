@@ -8,7 +8,7 @@
         <!-- <link rel="shortcut icon" href="https://itc.shuishi.com/admin/system/favicon.ico"> -->
         <!-- <link href="./bootstrap.min.css" rel="stylesheet"> -->
         <!-- <script src="./vue.min.js"></script> -->
-        <script src="./static/utils/vue.js"></script>
+        <script src="./static/utils/vue.js" type="text/javascript" charset="utf-8"></script>
     </head>
     <style>
         #vue_html{
@@ -24,6 +24,20 @@
             <!-- <iframe src="http://localhost:8091/login" frameborder="0" width="450"></iframe> -->
             <iframe :src="'https://daimler-dev.hubject-hbs.com/c/portal/'+pageName" frameborder="0" width="450"></iframe>
         </div>
-        <script src="index.js"></script>
+        <script type="text/javascript">
+            var vm = new Vue({
+                el: '#vue_html',
+                data: {
+                    pageName: ''
+                },
+                mounted() {
+                    let url = window.location.pathname
+                    this.pageName = url.substring(url.lastIndexOf('/') + 1, url.length);
+                    console.log(this.pageName, 'loc')
+                },
+                methods: {
+                }
+            })
+        </script>
     </body>
 </html>
