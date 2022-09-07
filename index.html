@@ -21,14 +21,19 @@
     <body class="gray-bg">
         <div id="vue_html">
             <!-- <iframe src="http://localhost:8091/login" frameborder="0" width="450"></iframe> -->
-            <iframe src="https://daimler-dev.hubject-hbs.com/c/portal/home" frameborder="0" width="450"></iframe>
+            <iframe :src="'https://daimler-dev.hubject-hbs.com/c/portal/'+pageName" frameborder="0" width="450"></iframe>
         </div>
         <script>
             var vm = new Vue({
                 el: '#vue_html',
                 data: {
+                    pageName:''
                 },
-                mounted() { },
+                mounted() { 
+                    let url = window.location.pathname
+                    this.pageName = url.substring(url.lastIndexOf('/')+1, url.length);
+                    console.log(this.pageName,'loc')
+                },
                 methods: {
                 }
             })
