@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="zh">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -24,20 +23,6 @@
             <!-- <iframe src="http://localhost:8091/login" frameborder="0" width="450"></iframe> -->
             <iframe :src="'https://daimler-dev.hubject-hbs.com/c/portal/'+pageName" frameborder="0" width="450"></iframe>
         </div>
-        <script>
-            var vm = new Vue({
-                el: '#vue_html',
-                data: {
-                    pageName:''
-                },
-                mounted() { 
-                    let url = window.location.pathname
-                    this.pageName = url.substring(url.lastIndexOf('/')+1, url.length);
-                    console.log(this.pageName,'loc')
-                },
-                methods: {
-                }
-            })
-        </script>
+        <script src="index.js"></script>
     </body>
 </html>
