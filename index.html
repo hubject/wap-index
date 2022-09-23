@@ -23,7 +23,7 @@
     <body class="gray-bg">
         <div id="vue_html">
             <!-- <iframe src="http://localhost:8091/login" frameborder="0" width="450"></iframe> -->
-            <iframe :src="'https://daimler-dev.hubject-hbs.com/c/portal/'+pageName" frameborder="0" width="450"></iframe>
+            <iframe :src="pageName" frameborder="0" width="450"></iframe>
         </div>
         <script type="text/javascript">
             var vm = new Vue({
@@ -32,8 +32,8 @@
                     pageName: ''
                 },
                 mounted() {
-                    let url = window.location.pathname
-                    this.pageName = url.substring(url.lastIndexOf('/') + 1, url.length);
+                    let url = window.location.pathname;
+                    this.pageName = url.replace('/d/', '/c/');
                     console.log(this.pageName, 'loc')
                 },
                 methods: {
